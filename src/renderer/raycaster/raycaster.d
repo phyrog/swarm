@@ -10,5 +10,9 @@ class Raycaster : Engine
 		return null;
 	}
 
-
+	public @property Image nextImage()
+	{
+		// TODO: stub
+		return null;
+	}
 }
