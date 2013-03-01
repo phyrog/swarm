@@ -2,3 +2,5 @@
 *.[oa]
 bin/*
 doc/*
+*.swp
+*.html
