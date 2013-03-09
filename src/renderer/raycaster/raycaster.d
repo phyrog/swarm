@@ -1,18 +1,54 @@
-import renderer.engine;
+public import renderer.engine;
+public import renderer.raycaster.ray;
+import data.vector;
 import data.image;
-import renderer.raycaster.ray;
+import std.math;
+import std.array;
+import std.parallelism;
+import std.conv;
+
+import std.stdio;
 
 class Raycaster : Engine
 {
-	public @property Image currentImage()
+
+	private Vector[][] cameraMat;
+
+	private const float fieldOfViewRatio = 130f/180f;
+	private float anglePerPixel;
+
+	this(uint x, uint y)
 	{
-		// TODO: stub
-		return null;
+		super(x, y);
+		this.cameraMat = uninitializedArray!(Vector[][])(y, x);
+
+		if(to!float(y) / to!float(x) > fieldOfViewRatio)
+		{
+			anglePerPixel = 130f / y;
+		}
+		else {
+			anglePerPixel = 180f / x;
+		}
+
+		foreach(r, ref row; taskPool.parallel(this.cameraMat))
+		{
+			foreach(c, ref col; taskPool.parallel(row))
+			{
+				col = Vector(0, 0, 1f).rotate(
+						Vector((y/2f-r)*anglePerPixel*PI/180,
+							   (x/2f-c)*anglePerPixel*PI/180,
+							   0f)
+					);
+				if(r > y/2-2 && r < y/2+2 && c > x/2-2 && c < x/2+2) {
+					writeln(col);
+				}
+			}
+		}
 	}
 
-	public @property Image nextImage()
+	override void render()
 	{
-		// TODO: stub
-		return null;
+		// TODO: Stub
+		this.swapBuffers();
 	}
 }
