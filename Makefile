@@ -1,9 +1,22 @@
-all: raycaster main
+all: link
+
+link: raycaster main data
+	cd bin; dmd -of./swarm ./lib/*.o
 
 main:
-	cd src; dmd -of../bin/swarm -od../bin/lib ./main.d ../bin/lib/*.a
+	cd src; dmd -od../bin/lib ./main.d -c
 
 raycaster:
-	cd src; dmd -lib -Xf../doc/raycaster.json -od../bin/lib ./renderer/raycaster/raycaster.d
+	cd src; dmd -od../bin/lib ./renderer/engine.d -c
+	cd src; dmd -od../bin/lib ./renderer/camera.d -c
+	cd src; dmd -od../bin/lib ./renderer/raycaster/ray.d -c
+	cd src; dmd -od../bin/lib ./renderer/raycaster/raycaster.d -c
 
-.PHONY: all main raycaster
+data:
+	cd src; dmd -od../bin/lib ./data/color.d -c
+	cd src; dmd -od../bin/lib ./data/image.d -c
+	cd src; dmd -od../bin/lib ./data/vector.d -c
+	cd src; dmd -od../bin/lib ./data/voxel.d -c
+
+
+.PHONY: all link main raycaster
