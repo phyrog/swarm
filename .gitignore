@@ -4,3 +4,5 @@ bin/*
 doc/*
 *.swp
 *.html
+*.ppm
+*.bak
