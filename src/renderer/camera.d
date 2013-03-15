@@ -3,18 +3,21 @@ public import data.vector;
 class Camera
 {
 	private Vector position_;
-	private Vector direction_;
+	private Vector focus_;
+	private float rotation_;
 
 	this()
 	{
 		this.position_ = Vector(0f, 0f, 0f);
-		this.direction_ = Vector(0f, 0f, 1f);
+		this.focus_ = Vector(0f, 0f, 0f);
+		this.rotation_ = 0f;
 	}
 
-	this(Vector position, Vector direction)
+	this(Vector position, Vector focus, float rotation = 0f)
 	{
 		this.position_ = position;
-		this.direction_ = direction.unit;
+		this.focus_ = focus;
+		this.rotation_ = rotation;
 	}
 
 	/**
@@ -28,13 +31,18 @@ class Camera
 	@property public void position(Vector position) { this.position_ = position; }
 
 	/**
-	 * Retrieves the direction of the camera as a unit vector
+	 * Retrieves the focal point of the camera
 	 */
-	@property public Vector direction() { return this.direction_.unit!1f; }
+	@property public Vector focus() { return this.focus_; }
 
 	/**
-	 * Sets the direction of the camera.
-	 * Converts the vector to a unit vector
+	 * Sets the focus of the camera.
 	 */
-	@property public void direction(Vector direction) { this.direction_ = direction.unit!1f; }
+	@property public void focus(Vector focus) { this.focus_ = focus; }
+
+	@property public float rotation() { return this.rotation_; }
+
+	@property public void rotation(float rotation) { this.rotation_ = rotation; }
+
+	@property public Vector direction() { return (this.focus_ - this.position_).unit; }
 }

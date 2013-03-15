@@ -15,6 +15,8 @@ class Image
 		this.data = uninitializedArray!(RGB[][])(y, x);
 	}
 
+	RGB[] opIndex(uint i) { return this.data[i]; }
+
 	/**
 	 * Returns the number of rows of the image
 	 */
@@ -24,6 +26,8 @@ class Image
 	 * Returns the number of columns of the image
 	 */
 	@property public uint cols() { return cast(uint)this.data[0].length; }
+
+	@property public RGB[][] raw() { return this.data; }
 
 	/**
 	 * Returns the row with the given index as a range

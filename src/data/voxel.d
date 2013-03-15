@@ -6,7 +6,7 @@ class VOctree
 	private VOctreeNode root_;
 	private Vector size_;
 
-	this(Vector size, VOctreeNode root = null)
+	this(Vector size, VOctreeNode root = new VOctreeNode())
 	{
 		this.size_ = size;
 		this.root_ = root;
@@ -26,12 +26,21 @@ class VOctreeNode
 	private VOctreeNode parent_;
 	private VOctreeNode[8] children_;
 
-	@property public RGBA color() { return this.color_; }
+	@property public RGBA color() { return (this.color_.invalid ? this.parent_.color : this.color_); }
 	@property public void color(RGBA color) { this.color_ = color; }
 
 	@property VOctreeNode parent() { return this.parent_; }
 	@property void parent(VOctreeNode node) { this.parent_ = node; }
 
+	@property bool hasChildren() { return this.children[0] !is null; }
+
 	@property VOctreeNode[8] children() { return this.children_; }
-	@property void children(VOctreeNode[8] nodes) { this.children_ = nodes; }
+	@property void children(VOctreeNode[8] nodes)
+	{
+		this.children_ = nodes;
+		foreach(ref child; children)
+		{
+			child.parent = this;
+		}
+	}
 }

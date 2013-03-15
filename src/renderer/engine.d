@@ -5,8 +5,8 @@ abstract class Engine
 {
 	private Camera activeCam;
 
-	private Image frontBuffer;
-	private Image backBuffer;
+	protected Image frontBuffer;
+	protected Image backBuffer;
 
 	this(uint x, uint y)
 	{
