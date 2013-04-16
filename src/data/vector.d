@@ -13,43 +13,30 @@ struct Vector
 
 	@property pure Vector unit(float base = 1f)()
 	{
-		return Vector(base*x/this.length, base*y/this.length, base*z/this.length);
+        return this*(base/this.length);
+	}
+
+	pure bool approxEqual(Vector v)
+	{
+		return this.x.approxEqual(v.x) && this.y.approxEqual(v.y) && this.z.approxEqual(v.z);
 	}
 
 	pure Vector opBinary(string op)(Vector v)
 	{
-		switch(op)
-		{
-			case "+":
-				return Vector(this.x + v.x, this.y+v.y, this.z+v.z);
-				break;
-			case "-":
-				return Vector(this.x - v.x, this.y-v.y, this.z-v.z);
-				break;
-			case "/":
-				return Vector(this.x/v.x, this.y/v.y, this.z/v.z);
-				break;
-			case "*":
-				return Vector(this.y*v.x, this.y*v.y, this.z*v.z);
-				break;
-			default:
-				throw new Exception("No such operator");
-		}
+        static if(op == "+") return Vector(this.x+v.x, this.y+v.y, this.z+v.z);
+        static if(op == "-") return Vector(this.x-v.x, this.y-v.y, this.z-v.z);
+        static if(op == "/") return Vector(this.x/v.x, this.y/v.y, this.z/v.z);
+        static if(op == "*") return Vector(this.x*v.x, this.y*v.y, this.z*v.z);
+		
+        throw new Exception("No such operator");
 	}
 
 	pure Vector opBinary(string op)(float scalar)
 	{
-		switch(op)
-		{
-			case "*":
-				return Vector(this.x*scalar, this.y*scalar, this.z*scalar);
-				break;
-			case "/":
-				return Vector(this.y/scalar, this.y/scalar, this.z/scalar);
-				break;
-			default:
-				throw new Exception("No such operator");
-		}
+        static if(op == "*") return Vector(this.x*scalar, this.y*scalar, this.z*scalar);
+        static if(op == "/") return Vector(this.x/scalar, this.y/scalar, this.z/scalar);
+		
+        throw new Exception("No such operator");
 	}
 
 	pure float dot(Vector v)
@@ -133,10 +120,6 @@ struct Quaternion
 		static if(op == "*")
 		{
 			return this * Quaternion(0f, v);
-			/*return Quaternion(-this.x*v.x - this.y*v.y - this.z*v.z,
-					   Vector(this.w*v.x + this.y*v.z - this.z*v.y,
-							  this.w*v.y - this.x*v.z + this.z*v.x,
-							  this.w*v.z + this.x*v.y - this.y*v.x));*/
 		}
 		else throw new Exception("Unsupported operation");
 	}
