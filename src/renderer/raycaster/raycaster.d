@@ -22,10 +22,15 @@ class Raycaster : Engine
 	private const float fieldOfViewRatio = angleVert/angleHoriz;
 	private float anglePerPixel;
 
+    private Vector[][] camRays;
+    private bool camChanged = true;
+
 	this(uint x, uint y, VOctree tree)
 	{
 		super(x, y);
 		this.tree = tree;
+
+        this.camRays = uninitializedArray!(Vector[][])(y, x);
 
 		if(to!float(y) / to!float(x) > fieldOfViewRatio)
 		{
@@ -37,49 +42,48 @@ class Raycaster : Engine
 	}
 
 	override void render()
-	{
+	{           
+        Quaternion cameraRotationSide;
+		if(this.activeCamera.direction.y.abs().approxEqual(1f))
+		{
+			cameraRotationSide = Quaternion.fromAxisAngle(0f, Vector(0f, 1f, 0f));
+		}
+		else if(this.activeCamera.direction.z < 0f && this.activeCamera.direction.x.approxEqual(0f))
+		{
+			cameraRotationSide = Quaternion.fromAxisAngle(PI, Vector(0f, 1f, 0f));
+		}
+		else
+		{
+			cameraRotationSide = Vector(0f, 0f, 1f).rotationTo(
+				Vector(this.activeCamera.direction.x, 0f, this.activeCamera.direction.z).unit);
+		}
+
+		Quaternion cameraRotationUp;
+		if(this.activeCamera.direction.y.abs().approxEqual(1f)) {
+			cameraRotationUp = Quaternion.fromAxisAngle(-this.activeCamera.direction.y * PI/2, Vector(1f, 0f, 0f));
+		}
+		else
+		{
+			cameraRotationUp = Vector(this.activeCamera.direction.x, 0f, this.activeCamera.direction.z).unit.rotationTo(this.activeCamera.direction.unit);
+		}
+
 		foreach(r, ref row; taskPool.parallel(this.backBuffer.raw))
 		{
 			foreach(c, ref col; taskPool.parallel(row))
 			{
-				Quaternion rayUp = Quaternion((r-this.backBuffer.rows/2f)*anglePerPixel/180*PI,
+                if(this.camChanged) { // ab hier
+                Quaternion rayUp = Quaternion((r-this.backBuffer.rows/2f)*anglePerPixel/180*PI,
 						Vector(1f, 0f, 0f));
 				Quaternion raySide = Quaternion((c-this.backBuffer.cols/2f)*anglePerPixel/180*PI,
 						Vector(0f, 1f, 0f));
 
-				Quaternion rayRotation = raySide * rayUp;
-
-				Quaternion cameraRotationSide;
-				if(this.activeCamera.direction.y.abs().approxEqual(1f))
-				{
-					cameraRotationSide = Quaternion.fromAxisAngle(0f, Vector(0f, 1f, 0f));
-				}
-				else if(this.activeCamera.direction.z < 0f && this.activeCamera.direction.x.approxEqual(0f))
-				{
-					cameraRotationSide = Quaternion.fromAxisAngle(PI, Vector(0f, 1f, 0f));
-				}
-				else
-				{
-					cameraRotationSide = Vector(0f, 0f, 1f).rotationTo(
-						Vector(this.activeCamera.direction.x, 0f, this.activeCamera.direction.z).unit);
-				}
-
-				Quaternion cameraRotationUp;
-				if(this.activeCamera.direction.y.abs().approxEqual(1f)) {
-					cameraRotationUp = Quaternion.fromAxisAngle(-this.activeCamera.direction.y * PI/2, Vector(1f, 0f, 0f));
-				}
-				else
-				{
-					cameraRotationUp = Vector(this.activeCamera.direction.x, 0f, this.activeCamera.direction.z).unit.rotationTo(this.activeCamera.direction.unit);
-				}
-
+                Quaternion rayRotation = raySide * rayUp;
+		
 			//	Quaternion cameraRotationAngle = Quaternion(this.activeCamera.rotation/2f, this.activeCamera.direction).unit;
 
 				Vector ray = Vector(0f, 0f, 1f).rotate(cameraRotationUp * cameraRotationSide * rayRotation);
 
 				if(r == 350 && c == 500 && false) {
-					writeln("RayUp: ", rayUp);
-					writeln("RaySide: ", raySide);
 					writeln("RayRotation: ", rayRotation);
 					writeln("CamRotSide: ", cameraRotationSide);
 					writeln("CamRotUp: ", cameraRotationUp);
@@ -89,10 +93,13 @@ class Raycaster : Engine
 				//	writeln("z: ", sin((rayRotation*cameraRotation).z));
 					writeln("Ray: ", ray);
 				}
+                this.camRays[r][c] = ray; // TODO:a
+                } // bis hier
 
-				VOctreeNode node = this.traverseTree(ray, r, c);
-				if(node !is null)
+				VOctreeNode[] nodes = this.traverseTree(camRays[r][c], r, c);
+				if(nodes.length > 0)
 				{
+					VOctreeNode node = nodes[0];
 					col = node.color.toRGB(RGB(0, 0, 0));
 				}
 				else
@@ -101,6 +108,7 @@ class Raycaster : Engine
 				}
 			}
 		}
+        this.camChanged = false; // TODO:a
 		this.swapBuffers();
 	}
 
@@ -143,7 +151,7 @@ class Raycaster : Engine
 
 	}
 
-	private VOctreeNode traverseTree(Vector ray, ulong row, ulong column, int depth = 0)
+	private VOctreeNode[] traverseTree(Vector ray, ulong row, ulong column, int depth = 0)
 	{
 		VOctreeNode node = this.tree.root;
 		VOctreeNode prev = null;
@@ -177,15 +185,11 @@ class Raycaster : Engine
 
 		if(dNear > dFar || dFar < 0f)
 		{
-			return null;
+			return [];
 		}
 
 		Vector collision = this.activeCamera.position + ray.unit * dNear;
 
-	//	writeln("col: ", collision);
-	//	writeln("size: ", size);
-	//	writeln("delta: ", delta);
-		
 		while(node !is null && node.hasChildren)
 		{
 			ubyte nextNode = 0;
@@ -212,14 +216,11 @@ class Raycaster : Engine
 				delta.z+=size.z;
 			} else { delta.z-=size.z/2f; }
 		
-	//		writeln(" ".replicate(currentDepth), "size: ", size);
-	//		writeln(" ".replicate(currentDepth), "delta: ", delta);
-			
 			prev = node;
 			node = node.children[nextNode];
 			++currentDepth;
 		}
 
-		return node;
+		return [node];
 	}
 }
