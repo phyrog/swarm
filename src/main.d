@@ -7,10 +7,13 @@ import data.voxel;
 
 import data.vector;
 import std.math;
+import std.datetime;
 
 /+
  + TODO:
  +		Inverted axes
+ +
+ +		Hidden voxels
  +/
 
 int main(string[] args)
@@ -29,11 +32,28 @@ int main(string[] args)
 	world.root.children = children;
 
 	Engine rc = new Raycaster(1000, 700, world);
-	rc.activeCamera = new Camera(Vector(5f, 20f, -10f), Vector(0f, 0f, 0f));
+	rc.activeCamera = new Camera(Vector(10f, 10f, -20f), Vector(0f, 0f, 0f));
 
+
+	StopWatch sw;
+	sw.start();
 	rc.render();
+	sw.stop();
+	writeln("render(): ", sw.peek().msecs, "ms");
 
-	write(rc.currentImage.ppm);
+    StopWatch sw2;
+    sw2.start();
+    rc.render();
+    sw2.stop();
+	writeln("render(): ", sw2.peek().msecs, "ms");
+	
+    StopWatch sw3;
+    sw3.start();
+    rc.render();
+    sw3.stop();
+	writeln("render(): ", sw3.peek().msecs, "ms");
+    
+    /* write(rc.currentImage.ppm); */
 
 	return 0;
 }
