@@ -39,21 +39,21 @@ int main(string[] args)
     sw.start();
     rc.render();
     sw.stop();
-    writeln("render(): ", sw.peek().msecs, "ms");
+    /* writeln("render(): ", sw.peek().msecs, "ms"); */
 
     StopWatch sw2;
     sw2.start();
     rc.render();
     sw2.stop();
-    writeln("render(): ", sw2.peek().msecs, "ms");
+    /* writeln("render(): ", sw2.peek().msecs, "ms"); */
     
     StopWatch sw3;
     sw3.start();
     rc.render();
     sw3.stop();
-    writeln("render(): ", sw3.peek().msecs, "ms");
+    /* writeln("render(): ", sw3.peek().msecs, "ms"); */
     
-    /* write(rc.currentImage.ppm); */
+    write(rc.currentImage.ppm);
 
     return 0;
 }
