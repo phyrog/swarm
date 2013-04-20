@@ -40,7 +40,7 @@ int main(string[] args)
     {
         foreach(Event e; eventQueue())
         {
-            /* writeln("Event fired: ", e); */
+            writeln("Event fired: ", e);
             e.fireInstant();
             emptyEventQueue();
         }
@@ -53,8 +53,15 @@ int main(string[] args)
         rc.activeCamera.position(Vector(10f, 10f, -20f));
         rc.activeCamera.focus(Vector(5f, 5f, 5f));
     }
-
-    /* write(rc.currentImage.ppm); */
-
+/*
+	foreach(Event e; eventQueue())
+    {
+        writeln("Event fired: ", e);
+		e.fireInstant();
+        emptyEventQueue();
+    }
+	rc.render();
+    write(rc.currentImage.ppm);
+*/
     return 0;
 }

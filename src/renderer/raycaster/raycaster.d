@@ -51,7 +51,7 @@ class Raycaster : Engine
 
     private void calculateCameraRotation()
     {
-        /* writeln("Recalculating camera rotation..."); */
+        writeln("Recalculating camera rotation...");
         Quaternion cameraRotationSide;
         if(this.activeCamera.direction.y.abs().approxEqual(1f))
         {
@@ -81,6 +81,8 @@ class Raycaster : Engine
 
     private void calculateRayRotation()
     {
+		writeln("Recalculating ray direction...");
+		calculateCameraRotation();
 		foreach(r, ref row; taskPool.parallel(this.backBuffer.raw))
 		{
 			foreach(c, ref col; taskPool.parallel(row))
@@ -90,7 +92,6 @@ class Raycaster : Engine
                 camRays[r][c] = Vector(0f, 0f, 1f).rotate(this.camRotation * raySide * rayUp);
 			}
 		}
-        /* writeln("Calculating rays next tick..."); */
     }
 
     override void render()
