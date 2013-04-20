@@ -51,6 +51,15 @@ struct Vector
                       this.x*v.y - this.y*v.x);
     }
 
+    Vector subst(string p)(float v)
+    {
+        static if(p == "x") this.x = v;
+        else if(p == "y") this.y = v;
+        else if(p == "z") this.z = v;
+        else throw new Exception("No such member");
+        return this;
+    }
+
     /**
      * Rotates the vector with the given quaternion
      */

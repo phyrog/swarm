@@ -120,20 +120,20 @@ class Raycaster : Engine
         if(intersectionNear.x > intersectionFar.x)
         {
             float tmpX = intersectionNear.x;
-            intersectionNear = Vector(intersectionFar.x, intersectionNear.y, intersectionNear.z);
-            intersectionFar = Vector(tmpX, intersectionFar.y, intersectionFar.z);
+            intersectionNear.subst!("x")(intersectionFar.x);
+            intersectionFar.subst!("x")(tmpX);
         }
         if(intersectionNear.y > intersectionFar.y)
         {
             float tmpY = intersectionNear.y;
-            intersectionNear = Vector(intersectionNear.x, intersectionFar.y, intersectionNear.z);
-            intersectionFar = Vector(intersectionFar.x, tmpY, intersectionFar.z);
+            intersectionNear.subst!("y")(intersectionFar.y);
+            intersectionFar.subst!("y")(tmpY);
         }
         if(intersectionNear.z > intersectionFar.z)
         {
             float tmpZ = intersectionNear.z;
-            intersectionNear = Vector(intersectionNear.x, intersectionNear.y, intersectionFar.z);
-            intersectionFar = Vector(intersectionFar.x, intersectionFar.y, tmpZ);
+            intersectionNear.subst!("z")(intersectionFar.z);
+            intersectionFar.subst!("z")(tmpZ);
         }
 
         return tuple(intersectionNear, intersectionFar);
