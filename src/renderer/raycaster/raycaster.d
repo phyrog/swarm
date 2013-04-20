@@ -24,7 +24,7 @@ class Raycaster : Engine
     private const float fieldOfViewRatio = angleVert/angleHoriz;
     private float anglePerPixel;
 
-    private Quaternion[][] camRays;
+    private Vector[][] camRays;
     private Quaternion camRotation;
     private bool calcRays = true;
 
@@ -39,7 +39,7 @@ class Raycaster : Engine
 
         this.tree = tree;
 
-          this.camRays = uninitializedArray!(Quaternion[][])(y, x);
+          this.camRays = uninitializedArray!(Vector[][])(y, x);
 
         if(to!float(y) / to!float(x) > fieldOfViewRatio)
         {
@@ -52,7 +52,7 @@ class Raycaster : Engine
 
     private void calculateCameraRotation()
     {
-        writeln("Recalculating camera rotation...");
+        /* writeln("Recalculating camera rotation..."); */
         Quaternion cameraRotationSide;
         if(this.activeCamera.direction.y.abs().approxEqual(1f))
         {
@@ -83,7 +83,7 @@ class Raycaster : Engine
     private void calculateRayRotation()
     {
         this.calcRays = true;
-        writeln("Calculating rays next tick...");
+        /* writeln("Calculating rays next tick..."); */
     }
 
     override void render()
@@ -96,14 +96,12 @@ class Raycaster : Engine
                 if(this.calcRays) {
                     Quaternion raySide = Quaternion((c-this.backBuffer.cols/2f)*anglePerPixel/180*PI, Vector(0f, 1f, 0f));
                     Quaternion rayUp = Quaternion((r-this.backBuffer.rows/2f)*anglePerPixel/180*PI, Vector(1f, 0f, 0f));
-                    this.camRays[r][c] = raySide * rayUp;
+                    camRays[r][c] = Vector(0f, 0f, 1f).rotate(this.camRotation * raySide * rayUp);
                 }
             //  Quaternion cameraRotationAngle = Quaternion(this.activeCamera.rotation/2f, this.activeCamera.direction).unit;
 
-                Vector ray = Vector(0f, 0f, 1f).rotate(this.camRotation * camRays[r][c]);
-                
                 sw.start();
-                VOctreeNode[] nodes = this.traverseTree(ray, r, c);
+                VOctreeNode[] nodes = this.traverseTree(camRays[r][c], r, c);
                 sw.stop();
                 if(nodes.length > 0)
                 {
@@ -119,7 +117,7 @@ class Raycaster : Engine
         
         this.calcRays = false;
         this.swapBuffers();
-        writeln("traverseTree(): ", sw.peek().msecs, "ms");
+        /* writeln("traverseTree(): ", sw.peek().msecs, "ms"); */
     }
 
     private Tuple!(Vector, Vector) intersections(Vector ray, Vector delta, Vector size)

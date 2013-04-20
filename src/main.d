@@ -40,7 +40,7 @@ int main(string[] args)
     {
         foreach(Event e; eventQueue())
         {
-            writeln("Event fired: ", e);
+            /* writeln("Event fired: ", e); */
             e.fireInstant();
             emptyEventQueue();
         }
