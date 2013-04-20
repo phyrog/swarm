@@ -22,15 +22,16 @@ class Raycaster : Engine
     private const float fieldOfViewRatio = angleVert/angleHoriz;
     private float anglePerPixel;
 
-     private Vector[][] camRays;
-     private bool camChanged = true;
+    private Quaternion[][] camRays;
+    private Quaternion camRotation;
+    private bool calcRays = true;
 
     this(uint x, uint y, VOctree tree)
     {
         super(x, y);
         this.tree = tree;
 
-          this.camRays = uninitializedArray!(Vector[][])(y, x);
+          this.camRays = uninitializedArray!(Quaternion[][])(y, x);
 
         if(to!float(y) / to!float(x) > fieldOfViewRatio)
         {
@@ -41,9 +42,10 @@ class Raycaster : Engine
         }
     }
 
-    override void render()
-    {              
-          Quaternion cameraRotationSide;
+    private void calculateCameraRotation()
+    {
+        writeln("Recalculating camera rotation...");
+        Quaternion cameraRotationSide;
         if(this.activeCamera.direction.y.abs().approxEqual(1f))
         {
             cameraRotationSide = Quaternion.fromAxisAngle(0f, Vector(0f, 1f, 0f));
@@ -67,24 +69,34 @@ class Raycaster : Engine
             cameraRotationUp = Vector(this.activeCamera.direction.x, 0f, this.activeCamera.direction.z).unit.rotationTo(this.activeCamera.direction.unit);
         }
 
+        this.camRotation = cameraRotationUp * cameraRotationSide;
+    }
+
+    private void calculateRayRotation()
+    {
+        this.calcRays = true;
+        writeln("Calculating rays next tick...");
+    }
+
+    override void render()
+    {
+        StopWatch sw;
         foreach(r, ref row; taskPool.parallel(this.backBuffer.raw))
         {
             foreach(c, ref col; taskPool.parallel(row))
             {
-                if(this.camChanged) { // ab hier
-                    Quaternion rayUp = Quaternion((r-this.backBuffer.rows/2f)*anglePerPixel/180*PI, Vector(1f, 0f, 0f));
+                if(this.calcRays) {
                     Quaternion raySide = Quaternion((c-this.backBuffer.cols/2f)*anglePerPixel/180*PI, Vector(0f, 1f, 0f));
+                    Quaternion rayUp = Quaternion((r-this.backBuffer.rows/2f)*anglePerPixel/180*PI, Vector(1f, 0f, 0f));
+                    this.camRays[r][c] = raySide * rayUp;
+                }
+            //  Quaternion cameraRotationAngle = Quaternion(this.activeCamera.rotation/2f, this.activeCamera.direction).unit;
 
-                    Quaternion rayRotation = raySide * rayUp;
-        
-                //  Quaternion cameraRotationAngle = Quaternion(this.activeCamera.rotation/2f, this.activeCamera.direction).unit;
-
-                    Vector ray = Vector(0f, 0f, 1f).rotate(cameraRotationUp * cameraRotationSide * rayRotation);
-
-                     this.camRays[r][c] = ray; // TODO:a
-                } // bis hier
-
-                VOctreeNode[] nodes = this.traverseTree(camRays[r][c], r, c);
+                Vector ray = Vector(0f, 0f, 1f).rotate(this.camRotation * camRays[r][c]);
+                
+                sw.start();
+                VOctreeNode[] nodes = this.traverseTree(ray, r, c);
+                sw.stop();
                 if(nodes.length > 0)
                 {
                     VOctreeNode node = nodes[0];
@@ -97,8 +109,9 @@ class Raycaster : Engine
             }
         }
         
-        this.camChanged = false; // TODO:a
+        this.calcRays = false;
         this.swapBuffers();
+        writeln("traverseTree(): ", sw.peek().msecs, "ms");
     }
 
     private Tuple!(Vector, Vector) intersections(Vector ray, Vector delta, Vector size)
@@ -109,9 +122,9 @@ class Raycaster : Engine
         if(this.activeCamera.position.y > delta.y) index+=2;
         if(this.activeCamera.position.z > delta.z) index+=4;
 
-        Vector nearPlanes = Vector(delta.x+(index | 1 ? size.x/2f : -size.x/2f), 
-                                   delta.y+(index | 2 ? size.y/2f : -size.y/2f), 
-                                   delta.z+(index | 4 ? size.z/2f : -size.z/2f));
+        Vector nearPlanes = Vector(delta.x+(index & 1 ? size.x/2f : -size.x/2f), 
+                                   delta.y+(index & 2 ? size.y/2f : -size.y/2f), 
+                                   delta.z+(index & 4 ? size.z/2f : -size.z/2f));
         Vector farPlanes = delta - (nearPlanes - delta);
 
         Vector intersectionNear = (nearPlanes - this.activeCamera.position) / ray;
