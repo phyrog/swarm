@@ -5,7 +5,7 @@ import data.image;
 import data.voxel;
 import event_manager;
 import std.math;
-import std.algorithm : min, max;
+import std.algorithm : min, max, reduce;
 import std.array;
 import std.parallelism;
 import std.conv;
@@ -26,7 +26,6 @@ class Raycaster : Engine
 
     private Vector[][] camRays;
     private Quaternion camRotation;
-    private bool calcRays = true;
 
     this(uint x, uint y, VOctree tree)
     {
@@ -82,27 +81,28 @@ class Raycaster : Engine
 
     private void calculateRayRotation()
     {
-        this.calcRays = true;
+		foreach(r, ref row; taskPool.parallel(this.backBuffer.raw))
+		{
+			foreach(c, ref col; taskPool.parallel(row))
+			{
+				Quaternion raySide = Quaternion((c-this.backBuffer.cols/2f)*anglePerPixel/180*PI, Vector(0f, 1f, 0f));
+                Quaternion rayUp = Quaternion((r-this.backBuffer.rows/2f)*anglePerPixel/180*PI, Vector(1f, 0f, 0f));
+                camRays[r][c] = Vector(0f, 0f, 1f).rotate(this.camRotation * raySide * rayUp);
+			}
+		}
         /* writeln("Calculating rays next tick..."); */
     }
 
     override void render()
     {
-        StopWatch sw;
         foreach(r, ref row; taskPool.parallel(this.backBuffer.raw))
         {
             foreach(c, ref col; taskPool.parallel(row))
             {
-                if(this.calcRays) {
-                    Quaternion raySide = Quaternion((c-this.backBuffer.cols/2f)*anglePerPixel/180*PI, Vector(0f, 1f, 0f));
-                    Quaternion rayUp = Quaternion((r-this.backBuffer.rows/2f)*anglePerPixel/180*PI, Vector(1f, 0f, 0f));
-                    camRays[r][c] = Vector(0f, 0f, 1f).rotate(this.camRotation * raySide * rayUp);
-                }
             //  Quaternion cameraRotationAngle = Quaternion(this.activeCamera.rotation/2f, this.activeCamera.direction).unit;
 
-                sw.start();
                 VOctreeNode[] nodes = this.traverseTree(camRays[r][c], r, c);
-                sw.stop();
+
                 if(nodes.length > 0)
                 {
                     VOctreeNode node = nodes[0];
@@ -115,9 +115,7 @@ class Raycaster : Engine
             }
         }
         
-        this.calcRays = false;
         this.swapBuffers();
-        /* writeln("traverseTree(): ", sw.peek().msecs, "ms"); */
     }
 
     private Tuple!(Vector, Vector) intersections(Vector ray, Vector delta, Vector size)
