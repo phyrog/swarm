@@ -56,41 +56,32 @@ int main(string[] args)
     bool done = false;
     SDL_Event sdl_event;
 
+    bool a;
+
     StopWatch s;
     while(!done)
     {
+        sw.start();
         while(SDL_PollEvent(&sdl_event))
         {
             if(sdl_event.type==SDL_QUIT) done = true;
         }
-        s.start();
         foreach(Event e; eventQueue())
         {
-            /* writeln("Event fired: ", e); */
             e.fireInstant();
             emptyEventQueue();
         }
-        s.stop();
-        writeln("sdl_pollevent(): ", s.peek().msecs, "ms");
-        s.reset();
-        sw.start();
         rc.render();
         sw.stop();
-        writeln("render(): ", sw.peek().msecs, "ms");
+        writeln(sw.peek().msecs, "ms / frame");
         sw.reset();
-            
-        rc.activeCamera.position(Vector(10f, 10f, -20f));
-        rc.activeCamera.focus(Vector(5f, 5f, 5f));
+        
+        if(a)
+        {
+            rc.activeCamera.position(Vector(10f, 10f, -20f));
+            rc.activeCamera.focus(Vector(5f, 5f, 5f));
+        }
+        a = !a;
     }
-/*
-    foreach(Event e; eventQueue())
-    {
-        writeln("Event fired: ", e);
-        e.fireInstant();
-        emptyEventQueue();
-    }
-    rc.render();
-    write(rc.currentImage.ppm);
-*/
     return 0;
 }
