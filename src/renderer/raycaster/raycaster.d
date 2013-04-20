@@ -50,15 +50,14 @@ class Raycaster : Engine
 
     private void calculateCameraRotation()
     {
-        writeln("Recalculating camera rotation...");
         Quaternion cameraRotationSide;
         if(this.activeCamera.direction.y.abs().approxEqual(1f))
         {
-            cameraRotationSide = Quaternion.fromAxisAngle(0f, Vector(0f, 1f, 0f));
+            cameraRotationSide = Quaternion.fromAxisAngle(0f, Vector.yVector);
         }
         else if(this.activeCamera.direction.z < 0f && this.activeCamera.direction.x.approxEqual(0f))
         {
-            cameraRotationSide = Quaternion.fromAxisAngle(PI, Vector(0f, 1f, 0f));
+            cameraRotationSide = Quaternion.fromAxisAngle(PI, Vector.yVector);
         }
         else
         {
@@ -68,7 +67,7 @@ class Raycaster : Engine
 
         Quaternion cameraRotationUp;
         if(this.activeCamera.direction.y.abs().approxEqual(1f)) {
-            cameraRotationUp = Quaternion.fromAxisAngle(-this.activeCamera.direction.y * PI/2, Vector(1f, 0f, 0f));
+            cameraRotationUp = Quaternion.fromAxisAngle(-this.activeCamera.direction.y * PI_2, Vector.xVector);
         }
         else
         {
@@ -80,15 +79,18 @@ class Raycaster : Engine
 
     private void calculateRayRotation()
     {
-		writeln("Recalculating ray direction...");
 		calculateCameraRotation();
+		float f = (anglePerPixel/180)*PI;
+		Quaternion raysSide[] = new Quaternion[](this.backBuffer.cols);
+		Quaternion rayUp;
 		foreach(r, ref row; taskPool.parallel(this.backBuffer.raw))
 		{
+            rayUp = Quaternion((r-this.backBuffer.rows/2f)*f, Vector.xVector);
 			foreach(c, ref col; taskPool.parallel(row))
 			{
-				Quaternion raySide = Quaternion((c-this.backBuffer.cols/2f)*anglePerPixel/180*PI, Vector(0f, 1f, 0f));
-                Quaternion rayUp = Quaternion((r-this.backBuffer.rows/2f)*anglePerPixel/180*PI, Vector(1f, 0f, 0f));
-                this.camRays[r][c] = Vector(0f, 0f, 1f).rotate(this.camRotation * raySide * rayUp);
+				if(r == 0) raysSide[c] = Quaternion((c-this.backBuffer.cols/2f)*f, Vector.yVector);
+
+                this.camRays[r][c] = Vector(0f, 0f, 1f).rotate(this.camRotation * raysSide[c] * rayUp);
 			}
 		}
     }

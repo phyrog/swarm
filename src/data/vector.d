@@ -6,9 +6,13 @@ struct Vector
     float y;
     float z;
 
+    immutable static Vector xVector = Vector(1f, 0f, 0f);
+    immutable static Vector yVector = Vector(0f, 1f, 0f);
+    immutable static Vector zVector = Vector(0f, 0f, 1f);
+
     @property pure float length()
     {
-        return sqrt(x*x+y*y+z*z);
+        return sqrt(x*x + y*y + z*z);
     }
 
     @property pure Vector unit(float base = 1f)()
@@ -59,26 +63,18 @@ struct Vector
         else throw new Exception("No such member");
         return this;
     }
-
     /**
      * Rotates the vector with the given quaternion
      */
     pure Vector rotate(Quaternion q)
     {
-        return (q * this * q.inv).vector;
+    	return (q * this * q.inv).vector;
     }
 
     pure Quaternion rotationTo(Vector v)
     {
-        float s = sqrt((1+this.dot(v))*2);
-        float invs = 1/s;
-
-        Vector c = this.cross(v);
-
-        return Quaternion(s*0.5f,
-                          Vector(c.x*invs,
-                                 c.y*invs,
-                                 c.z*invs));
+    	float s = sqrt((1+this.dot(v))*2);
+    	return Quaternion(s/2f, this.cross(v)/s);
     }
 }
 
@@ -92,11 +88,11 @@ struct Quaternion
     @property public pure float y() { return this.vector.y; }
     @property public pure float z() { return this.vector.z; }
 
-    @property public pure Quaternion inv() { return Quaternion(this.w, Vector(-this.x, -this.y, -this.z)); }
+    @property public pure Quaternion inv() { return Quaternion(this.w, this.vector*(-1f)); }
 
     @property public float length()
     {
-        return sqrt(this.w*this.w + this.x*this.x + this.y*this.y + this.z*this.z);
+        return sqrt(w*w + x*x + y*y + z*z);
     }
 
     @property public Quaternion unit(float base = 1f)()
