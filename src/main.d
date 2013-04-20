@@ -23,12 +23,12 @@ import std.datetime;
 
 int main(string[] args)
 {
-	int sizeX = 1000;
-	int sizeY = 700;
-	if(args.length > 1) sizeX = to!int(args[1]);
-	if(args.length > 2) sizeY = to!int(args[2]);
-	
-	DerelictSDL2.load();
+    int sizeX = 1000;
+    int sizeY = 700;
+    if(args.length > 1) sizeX = to!int(args[1]);
+    if(args.length > 2) sizeY = to!int(args[2]);
+    
+    DerelictSDL2.load();
 
     VOctree world = new VOctree(Vector(10f, 10f, 10f));
     world.root.color = RGBA(204, 204, 204, 255);
@@ -47,32 +47,32 @@ int main(string[] args)
 
     StopWatch sw;
 
-	SDL_Init(SDL_INIT_EVERYTHING);
+    SDL_Init(SDL_INIT_EVERYTHING);
 
-	SDL_Window* window = SDL_CreateWindow("Swarm", SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED, sizeX, sizeY, SDL_WINDOW_SHOWN);
-	
+    SDL_Window* window = SDL_CreateWindow("Swarm", SDL_WINDOWPOS_UNDEFINED,
+            SDL_WINDOWPOS_UNDEFINED, sizeX, sizeY, SDL_WINDOW_SHOWN);
+    
 
-	bool done = false;
-	SDL_Event sdl_event;
+    bool done = false;
+    SDL_Event sdl_event;
 
-	StopWatch s;
+    StopWatch s;
     while(!done)
     {
-		while(SDL_PollEvent(&sdl_event))
-		{
-			if(sdl_event.type==SDL_QUIT) done = true;
-		}
-		s.start();
+        while(SDL_PollEvent(&sdl_event))
+        {
+            if(sdl_event.type==SDL_QUIT) done = true;
+        }
+        s.start();
         foreach(Event e; eventQueue())
         {
             /* writeln("Event fired: ", e); */
             e.fireInstant();
             emptyEventQueue();
         }
-		s.stop();
-		writeln("sdl_pollevent(): ", s.peek().msecs, "ms");
-		s.reset();
+        s.stop();
+        writeln("sdl_pollevent(): ", s.peek().msecs, "ms");
+        s.reset();
         sw.start();
         rc.render();
         sw.stop();
@@ -83,13 +83,13 @@ int main(string[] args)
         rc.activeCamera.focus(Vector(5f, 5f, 5f));
     }
 /*
-	foreach(Event e; eventQueue())
+    foreach(Event e; eventQueue())
     {
         writeln("Event fired: ", e);
-		e.fireInstant();
+        e.fireInstant();
         emptyEventQueue();
     }
-	rc.render();
+    rc.render();
     write(rc.currentImage.ppm);
 */
     return 0;
