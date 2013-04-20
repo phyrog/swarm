@@ -1,6 +1,7 @@
 import renderer.raycaster.raycaster;
 import renderer.camera;
 import std.algorithm;
+import event_manager;
 import std.stdio;
 
 import data.voxel;
@@ -18,7 +19,6 @@ import std.datetime;
 
 int main(string[] args)
 {
-
     VOctree world = new VOctree(Vector(10f, 10f, 10f));
     world.root.color = RGBA(204, 204, 204, 255);
     VOctreeNode[8] children = [new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), 
@@ -31,29 +31,30 @@ int main(string[] args)
     children[2].children = children2;
     world.root.children = children;
 
-    Engine rc = new Raycaster(1000, 700, world);
+    Engine rc = new Raycaster(1000, 1000, world);
     rc.activeCamera = new Camera(Vector(10f, 10f, -20f), Vector(0f, 0f, 0f));
 
-
     StopWatch sw;
-    sw.start();
-    rc.render();
-    sw.stop();
-    /* writeln("render(): ", sw.peek().msecs, "ms"); */
 
-    StopWatch sw2;
-    sw2.start();
-    rc.render();
-    sw2.stop();
-    /* writeln("render(): ", sw2.peek().msecs, "ms"); */
-    
-    StopWatch sw3;
-    sw3.start();
-    rc.render();
-    sw3.stop();
-    /* writeln("render(): ", sw3.peek().msecs, "ms"); */
-    
-    write(rc.currentImage.ppm);
+    while(true)
+    {
+        foreach(Event e; eventQueue())
+        {
+            writeln("Event fired: ", e);
+            e.fireInstant();
+            emptyEventQueue();
+        }
+        sw.start();
+        rc.render();
+        sw.stop();
+        writeln("render(): ", sw.peek().msecs, "ms");
+        sw.reset();
+            
+        rc.activeCamera.position(Vector(10f, 10f, -20f));
+        rc.activeCamera.focus(Vector(5f, 5f, 5f));
+    }
+
+    /* write(rc.currentImage.ppm); */
 
     return 0;
 }

@@ -3,6 +3,7 @@ public import renderer.raycaster.ray;
 import data.vector;
 import data.image;
 import data.voxel;
+import event_manager;
 import std.math;
 import std.algorithm : min, max;
 import std.array;
@@ -11,6 +12,7 @@ import std.conv;
 import std.typecons;
 
 import std.stdio;
+import std.datetime;
 
 class Raycaster : Engine
 {
@@ -29,6 +31,12 @@ class Raycaster : Engine
     this(uint x, uint y, VOctree tree)
     {
         super(x, y);
+
+        (Event.CAMERA_STARTUP).register(&this.calculateCameraRotation);
+        (Event.CAMERA_POSITION_CHANGED).register(&this.calculateCameraRotation);
+        (Event.CAMERA_FOCUS_CHANGED).register(&this.calculateCameraRotation);
+        (Event.CAMERA_STARTUP).register(&this.calculateRayRotation);
+
         this.tree = tree;
 
           this.camRays = uninitializedArray!(Quaternion[][])(y, x);

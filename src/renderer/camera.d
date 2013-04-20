@@ -1,4 +1,5 @@
 public import data.vector;
+import event_manager;
 
 class Camera
 {
@@ -11,6 +12,7 @@ class Camera
         this.position_ = Vector(0f, 0f, 0f);
         this.focus_ = Vector(0f, 0f, 0f);
         this.rotation_ = 0f;
+        (Event.CAMERA_STARTUP).fire();
     }
 
     this(Vector position, Vector focus, float rotation = 0f)
@@ -18,6 +20,7 @@ class Camera
         this.position_ = position;
         this.focus_ = focus;
         this.rotation_ = rotation;
+        (Event.CAMERA_STARTUP).fire();
     }
 
     /**
@@ -28,7 +31,7 @@ class Camera
     /**
      * Sets the position of the camera
      */
-    @property public void position(Vector position) { this.position_ = position; }
+    @property public void position(Vector position) { this.position_ = position; (Event.CAMERA_POSITION_CHANGED).fire(); }
 
     /**
      * Retrieves the focal point of the camera
@@ -38,7 +41,7 @@ class Camera
     /**
      * Sets the focus of the camera.
      */
-    @property public void focus(Vector focus) { this.focus_ = focus; }
+    @property public void focus(Vector focus) { this.focus_ = focus; (Event.CAMERA_FOCUS_CHANGED).fire(); }
 
     @property public float rotation() { return this.rotation_; }
 

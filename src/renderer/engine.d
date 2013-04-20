@@ -1,5 +1,6 @@
 public import data.image;
 import renderer.camera;
+import event_manager;
 
 abstract class Engine
 {
@@ -32,6 +33,7 @@ abstract class Engine
         auto tmp = this.frontBuffer;
         this.frontBuffer = this.backBuffer;
         this.backBuffer = tmp;
+        (Event.IMAGE_FLIPPED).fire();
     }
 
     /**
