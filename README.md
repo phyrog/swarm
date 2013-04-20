@@ -4,7 +4,7 @@ swarm
 A sparse voxel octree raycaster written in the D programming language
 
 ## Dependencies
-*   SDL
+*   SDL2
 *   derelict3
 
 ## Render the example
