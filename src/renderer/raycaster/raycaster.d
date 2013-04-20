@@ -31,10 +31,9 @@ class Raycaster : Engine
     {
         super(x, y);
 
-        (Event.CAMERA_STARTUP).register(&this.calculateCameraRotation);
-        (Event.CAMERA_POSITION_CHANGED).register(&this.calculateCameraRotation);
-        (Event.CAMERA_FOCUS_CHANGED).register(&this.calculateCameraRotation);
         (Event.CAMERA_STARTUP).register(&this.calculateRayRotation);
+		(Event.CAMERA_POSITION_CHANGED).register(&this.calculateRayRotation);
+        (Event.CAMERA_FOCUS_CHANGED).register(&this.calculateRayRotation);
 
         this.tree = tree;
 
@@ -89,7 +88,7 @@ class Raycaster : Engine
 			{
 				Quaternion raySide = Quaternion((c-this.backBuffer.cols/2f)*anglePerPixel/180*PI, Vector(0f, 1f, 0f));
                 Quaternion rayUp = Quaternion((r-this.backBuffer.rows/2f)*anglePerPixel/180*PI, Vector(1f, 0f, 0f));
-                camRays[r][c] = Vector(0f, 0f, 1f).rotate(this.camRotation * raySide * rayUp);
+                this.camRays[r][c] = Vector(0f, 0f, 1f).rotate(this.camRotation * raySide * rayUp);
 			}
 		}
     }
@@ -102,7 +101,7 @@ class Raycaster : Engine
             {
             //  Quaternion cameraRotationAngle = Quaternion(this.activeCamera.rotation/2f, this.activeCamera.direction).unit;
 
-                VOctreeNode[] nodes = this.traverseTree(camRays[r][c], r, c);
+                VOctreeNode[] nodes = this.traverseTree(this.camRays[r][c], r, c);
 
                 if(nodes.length > 0)
                 {
