@@ -6,6 +6,10 @@ import std.stdio;
 
 import data.voxel;
 
+import std.conv;
+
+import derelict.sdl2.sdl;
+
 import data.vector;
 import std.math;
 import std.datetime;
@@ -19,6 +23,13 @@ import std.datetime;
 
 int main(string[] args)
 {
+	int sizeX = 1000;
+	int sizeY = 700;
+	if(args.length > 1) sizeX = to!int(args[1]);
+	if(args.length > 2) sizeY = to!int(args[2]);
+	
+	DerelictSDL2.load();
+
     VOctree world = new VOctree(Vector(10f, 10f, 10f));
     world.root.color = RGBA(204, 204, 204, 255);
     VOctreeNode[8] children = [new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), 
@@ -31,19 +42,37 @@ int main(string[] args)
     children[2].children = children2;
     world.root.children = children;
 
-    Engine rc = new Raycaster(1000, 1000, world);
+    Engine rc = new Raycaster(sizeX, sizeY, world);
     rc.activeCamera = new Camera(Vector(10f, 10f, -20f), Vector(0f, 0f, 0f));
 
     StopWatch sw;
 
-    while(true)
+	SDL_Init(SDL_INIT_EVERYTHING);
+
+	SDL_Window* window = SDL_CreateWindow("Swarm", SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED, sizeX, sizeY, SDL_WINDOW_SHOWN);
+	
+
+	bool done = false;
+	SDL_Event sdl_event;
+
+	StopWatch s;
+    while(!done)
     {
+		while(SDL_PollEvent(&sdl_event))
+		{
+			if(sdl_event.type==SDL_QUIT) done = true;
+		}
+		s.start();
         foreach(Event e; eventQueue())
         {
-            writeln("Event fired: ", e);
+            /* writeln("Event fired: ", e); */
             e.fireInstant();
             emptyEventQueue();
         }
+		s.stop();
+		writeln("sdl_pollevent(): ", s.peek().msecs, "ms");
+		s.reset();
         sw.start();
         rc.render();
         sw.stop();
