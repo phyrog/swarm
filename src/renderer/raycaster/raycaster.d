@@ -32,7 +32,7 @@ class Raycaster : Engine
         super(x, y);
 
         (Event.CAMERA_STARTUP).register(&this.calculateRayRotation);
-		(Event.CAMERA_POSITION_CHANGED).register(&this.calculateRayRotation);
+        (Event.CAMERA_POSITION_CHANGED).register(&this.calculateRayRotation);
         (Event.CAMERA_FOCUS_CHANGED).register(&this.calculateRayRotation);
 
         this.tree = tree;
@@ -79,20 +79,20 @@ class Raycaster : Engine
 
     private void calculateRayRotation()
     {
-		calculateCameraRotation();
-		float f = (anglePerPixel/180)*PI;
-		Quaternion raysSide[] = new Quaternion[](this.backBuffer.cols);
-		Quaternion rayUp;
-		foreach(r, ref row; taskPool.parallel(this.backBuffer.raw))
-		{
+        calculateCameraRotation();
+        float f = (anglePerPixel/180)*PI;
+        Quaternion raysSide[] = new Quaternion[](this.backBuffer.cols);
+        Quaternion rayUp;
+        foreach(r, ref row; taskPool.parallel(this.backBuffer.raw))
+        {
             rayUp = Quaternion((r-this.backBuffer.rows/2f)*f, Vector.xVector);
-			foreach(c, ref col; taskPool.parallel(row))
-			{
-				if(r == 0) raysSide[c] = Quaternion((c-this.backBuffer.cols/2f)*f, Vector.yVector);
+            foreach(c, ref col; taskPool.parallel(row))
+            {
+                if(r == 0) raysSide[c] = Quaternion((c-this.backBuffer.cols/2f)*f, Vector.yVector);
 
                 this.camRays[r][c] = Vector(0f, 0f, 1f).rotate(this.camRotation * raysSide[c] * rayUp);
-			}
-		}
+            }
+        }
     }
 
     override void render()
