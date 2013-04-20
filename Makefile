@@ -1,26 +1,35 @@
+CC=dmd
+SRC=src
+AFLAGS=
+CFLAGS=-od../bin/lib -c $(AFLAGS)
+LFLAGS=-L-lDerelictSDL2 -L-lDerelictUtil -L-ldl $(AFLAGS)
+
 all: link
 
+release: AFLAGS += -release
+release: link
+
 link: raycaster main event_manager data
-	cd bin; dmd -of./swarm ./lib/*.o
+	cd bin; $(CC) $(LFLAGS) -of./swarm ./lib/*.o
 
 main:
-	cd src; dmd -od../bin/lib ./main.d -c
+	cd $(SRC); $(CC) $(CFLAGS) ./main.d
 
 raycaster:
-	cd src; dmd -od../bin/lib ./renderer/engine.d -c
-	cd src; dmd -od../bin/lib ./renderer/camera.d -c
-	cd src; dmd -od../bin/lib ./renderer/raycaster/ray.d -c
-	cd src; dmd -od../bin/lib ./renderer/raycaster/raycaster.d -c
+	cd $(SRC); $(CC) $(CFLAGS) ./renderer/engine.d
+	cd $(SRC); $(CC) $(CFLAGS) ./renderer/camera.d
+	cd $(SRC); $(CC) $(CFLAGS) ./renderer/raycaster/ray.d
+	cd $(SRC); $(CC) $(CFLAGS) ./renderer/raycaster/raycaster.d
 
 event_manager:
-	cd src; dmd -od../bin/lib ./event_manager.d -c
+	cd $(SRC); $(CC) $(CFLAGS) ./event_manager.d
 
 data:
-	cd src; dmd -od../bin/lib ./data/color.d -c
-	cd src; dmd -od../bin/lib ./data/image.d -c
-	cd src; dmd -od../bin/lib ./data/vector.d -c
-	cd src; dmd -od../bin/lib ./data/voxel.d -c
-	cd src; dmd -od../bin/lib ./data/event.d -c
+	cd $(SRC); $(CC) $(CFLAGS) ./data/color.d
+	cd $(SRC); $(CC) $(CFLAGS) ./data/image.d
+	cd $(SRC); $(CC) $(CFLAGS) ./data/vector.d
+	cd $(SRC); $(CC) $(CFLAGS) ./data/voxel.d
+	cd $(SRC); $(CC) $(CFLAGS) ./data/event.d
 
 
 .PHONY: all link main raycaster data event_manager
