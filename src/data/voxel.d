@@ -35,6 +35,9 @@ class VOctreeNode
     @property bool hasChildren() { return this.children[0] !is null; }
 
     @property VOctreeNode[8] children() { return this.children_; }
+    @property void createChildren() {
+        this.children_ = new VOctreeNode[](8);
+    }
     @property void children(VOctreeNode[8] nodes)
     {
         this.children_ = nodes;

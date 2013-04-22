@@ -32,15 +32,12 @@ int main(string[] args)
 
     VOctree world = new VOctree(Vector(10f, 10f, 10f));
     world.root.color = RGBA(204, 204, 204, 255);
-    VOctreeNode[8] children = [new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), 
-                               new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), new VOctreeNode()];
-    VOctreeNode[8] children2 = [new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), 
-                                new VOctreeNode(), new VOctreeNode(), new VOctreeNode(), new VOctreeNode()];
-    children[3].color = RGBA(255, 0, 0, 255);
-    children[1].color = RGBA(255, 255, 0, 255);
-    children2[0].color = RGBA(0, 255, 0, 255);
-    children[2].children = children2;
-    world.root.children = children;
+    world.root.createChildren();
+    world.root.children[2].createChildren();
+    
+    world.root.children[3].color = RGBA(255, 0, 0, 255);
+    world.root.children[1].color = RGBA(255, 255, 0, 255);
+    world.root.children[2].children[0].color = RGBA(0, 255, 0, 255);
 
     Engine rc = new Raycaster(sizeX, sizeY, world);
     rc.activeCamera = new Camera(Vector(10f, 10f, -20f), Vector(0f, 0f, 0f));
